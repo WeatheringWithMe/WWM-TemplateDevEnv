@@ -1,4 +1,4 @@
-## Og's TemplateDevEnv
+## WWM's TemplateDevEnv
 
 Forked by CleanroomMC/TemplateDevEnv
 
