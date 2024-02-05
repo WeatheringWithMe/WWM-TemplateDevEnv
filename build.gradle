@@ -9,6 +9,8 @@ plugins {
     id 'java-library'
     alias libs.plugins.idea.ext
     alias libs.plugins.rfg
+    alias libs.plugins.kotlin.gradle
+    alias libs.plugins.kotlin.jvm
 }
 
 apply from: 'gradle/scripts/helpers.gradle'
@@ -56,6 +58,13 @@ java {
     }
     if (propertyBool('generate_javadocs_jar')) {
         withJavadocJar()
+    }
+    modularity.inferModulePath = true
+}
+
+kotlin {
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of(propertyBool('use_modern_java_syntax') ? 16 : 8))
     }
 }
 
@@ -284,6 +293,13 @@ tasks.withType(JavaCompile).configureEach {
             vendor.set(JvmVendorSpec.AZUL)
         })
     }
+    options.compilerArgumentProviders.add(new CommandLineArgumentProvider() {
+        @Override
+        Iterable<String> asArguments() {
+            // Provide compiled Kotlin classes to javac – needed for Java/Kotlin mixed sources to work
+            return ["--patch-module", "%s=${sourceSets.named('main').get().output.asPath}".formatted(propertyString('root_package'))]
+        }
+    })
 }
 
 tasks.register('cleanroomAfterSync') {
